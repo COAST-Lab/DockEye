@@ -12,6 +12,6 @@ Funding for this project comes from the MOORE Foundation through the SOCON (Sust
 
 ## Introduction
 
-This sensor is built using an Espressif ESP32-S3 microcontroller, an Adafruit Adalogger Featherwing, an AS7341 light sensor, an AW9523 LED driver, LEDs, and an enclosure. 
+This sensor is built using an Adafruit ESP32-S3 Feather microcontroller, an Adafruit Adalogger Featherwing, an AS7341 light sensor, an AW9523 LED driver, LEDs, and an enclosure. 
 This repository will contain circuit diagrams and instructions for building the sensor, code for flashing to the microcontroller, 3D printer models for the enclosure, 
 scripts for data analysis, etc. This sensor is in active development, and this repository will be updated continuously as progress is made. Stay tuned!
