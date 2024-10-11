@@ -60,7 +60,7 @@ void setup() {
 
   SD.begin(SD_CHIP_SELECT);
 
-  File file = SD.open("Test_3.csv", FILE_WRITE);
+  File file = SD.open("Test.csv", FILE_WRITE);
 
   if (file) {
     file.println("Date and Time,ASTEP,ATIME,GAIN,LED Status,LED Intensity,Test,Seconds,Milliseconds,Type,F1 (Basic),F2 (Basic),F3 (Basic),F4 (Basic),F5 (Basic),F6 (Basic),F7 (Basic),F8 (Basic),Clear (Basic),NIR (Basic),Type,F1 (Raw),F2 (Raw),F3 (Raw),F4 (Raw),F5 (Raw),F6 (Raw),F7 (Raw),F8 (Raw),Clear (Raw),NIR (Raw),Measurement Type"); // Updated Headers
@@ -127,7 +127,7 @@ void turnOnLED(uint8_t ledIndex, unsigned long duration, const char* measurement
 }
 
 void fileprintresults(SdFat &sd, RTC_PCF8523 &rtc, const char* measurementType) {
-  File file = sd.open("Test_3.csv", FILE_WRITE);
+  File file = sd.open("Test.csv", FILE_WRITE);
   DateTime now = rtc.now();
 
   uint16_t readings[12];
