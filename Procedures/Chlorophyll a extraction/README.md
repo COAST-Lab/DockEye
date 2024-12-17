@@ -1,6 +1,6 @@
-## Chlorophyll-a extraction method
+# Chlorophyll-a extraction method
 
-# Extraction
+## Extraction
 
 1. Cut up spinach leaves and weigh out 4 g (I did 4 g with a very high extraction efficiency, you could likely do much less).
 
@@ -22,7 +22,7 @@
 
 10. Measure on second instrument to determine the needed dilution.
 
-# Calibration standard preparation 
+## Calibration standard preparation 
 
 1. Dilute to 100 μg/L for CS5. 
 
