@@ -1,6 +1,6 @@
 #include <Adafruit_AS7341.h>
 #include <Adafruit_AW9523.h>
-#include "RTClib.h"
+#include <RTClib.h>
 #include <SdFat.h>
 
 Adafruit_AS7341 as7341;
