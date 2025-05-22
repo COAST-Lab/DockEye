@@ -8,6 +8,14 @@ Adafruit_AW9523 aw;
 RTC_PCF8523 rtc;
 File myFile;
 
+float sumChlF8 = 0;
+int countChlF8 = 0;
+
+float sumTurbF8 = 0;
+int countTurbF8 = 0;
+
+float calibrated_chla = 0;
+
 char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 const int SD_CHIP_SELECT = 10;
 
@@ -36,7 +44,7 @@ void setup() {
 
   as7341.setATIME(255);      
   as7341.setASTEP(999);
-  as7341.setGain(AS7341_GAIN_128X);
+  as7341.setGain(AS7341_GAIN_256X);
 
   if (! rtc.begin()) {
     Serial.println("Couldn't find RTC");
@@ -73,29 +81,66 @@ void setup() {
 void loop() {
   // Blink LED 2 on/off twice
   blinkLED(2, 2);
-  Serial.println("begin chlorophyll measurements");
+  Serial.println("Begin chlorophyll measurements.");
 
   // Turn on LED 1 for one minute and print results
-  turnOnLED(3, 60000, "chlorophyll a");
+  turnOnLED(3, 60000, "Chlorophyll-a");
 
   // Blink LED 2 on/off once
   blinkLED(2, 2);
-  Serial.println("End chlorophyll measurements");
+  Serial.println("End chlorophyll measurements.");
 
   // Blink LED 2 on/off three times
   blinkLED(2, 3);
-  Serial.println("Begin turbidity measurements");
+  Serial.println("Begin turbidity measurements.");
 
   // Turn on LED 0 for one minute and print results
-  turnOnLED(0, 60000, "turbidity");
+  turnOnLED(0, 60000, "Turbidity");
 
   // Blink LED 2 on/off once
   blinkLED(2, 2);
-  Serial.println("End turbidity measurements");
+  Serial.println("End turbidity measurements.");
 
   // Turn on LED 3 forever
   aw.analogWrite(LedPins[3], LEDdim);
   aw.analogWrite(LedPins[2], LEDbright);
+
+  // Final summary
+if (countChlF8 > 0 && countTurbF8 > 0) {
+  float avgChlF8 = sumChlF8 / countChlF8;
+  float avgTurbF8 = sumTurbF8 / countTurbF8;
+  float diff = avgChlF8 - avgTurbF8;
+  //calibration equation 
+  float calibrated_chla = 0.1332 * diff - 1.7127;
+
+  // Log one final summary row to SD
+    File file = SD.open("Test.csv", FILE_WRITE);
+    if (file) {
+      file.println("SUMMARY");
+      file.print("Average F8 Raw Chlorophyll,");
+      file.println(avgChlF8);
+      file.print("Average F8 Raw Turbidity,");
+      file.println(avgTurbF8);
+      file.print("Chl - Turb F8,");
+      file.println(diff);
+      file.print("Calibrated Chlorophyll-a,");
+      file.println(calibrated_chla);
+      file.close();
+    }
+
+    // Print to serial
+    Serial.println("==== FINAL AVERAGE RESULTS ====");
+    Serial.print("Chlorophyll-a Avg. Raw Fluorescence (counts): "); 
+    Serial.println(avgChlF8);
+    Serial.print("Avg. Background (counts): "); 
+    Serial.println(avgTurbF8);
+    Serial.print("Background Subtracted Fluorescence (counts): "); 
+    Serial.println(diff);
+    Serial.print("Calibrated Chlorophyll-a (μg/L): "); 
+    Serial.println(calibrated_chla);
+    Serial.println("================================");
+  }
+
 
   while (1) {
     delay(1);
@@ -113,7 +158,11 @@ void blinkLED(uint8_t ledIndex, int blinkCount) {
 
 void turnOnLED(uint8_t ledIndex, unsigned long duration, const char* measurementType) {
   unsigned long startTime = millis();
+  unsigned long lastProgressTime = 0;
+  const int barWidth = 30;
+
   while (millis() - startTime < duration) {
+    // Set only the desired LED on
     for (int i = 0; i < NumLEDs; i++) {
       if (i == ledIndex) {
         aw.analogWrite(LedPins[i], LEDbright);
@@ -121,8 +170,30 @@ void turnOnLED(uint8_t ledIndex, unsigned long duration, const char* measurement
         aw.analogWrite(LedPins[i], LEDdim);
       }
     }
+
+    // Take measurements
     fileprintresults(SD, rtc, measurementType);
     serialprintresults(rtc, measurementType);
+
+    // Display loading bar every 1 second
+    unsigned long now = millis();
+    if (now - lastProgressTime >= 1000) {
+      float percent = (float)(now - startTime) / duration;
+      if (percent > 1.0) percent = 1.0;
+      int hashes = percent * barWidth;
+
+      Serial.print(measurementType);
+      Serial.print(": [");
+      for (int i = 0; i < barWidth; ++i) {
+        if (i < hashes) Serial.print("#");
+        else Serial.print(" ");
+      }
+      Serial.print("] ");
+      Serial.print((int)(percent * 100));
+      Serial.print("%   "); // Add padding to erase leftovers
+
+      lastProgressTime = now;
+    }
   }
 }
 
@@ -231,82 +302,20 @@ void serialprintresults(RTC_PCF8523 &rtc, const char* measurementType) {
   DateTime now = rtc.now();
 
   uint16_t readings[12];
-  float counts[12];
 
   if (!as7341.readAllChannels(readings)){
     Serial.println("Error reading all channels!");
     return;
   }
-
-  for(uint8_t i = 0; i < 12; i++) {
-    if(i == 4 || i == 5) continue;
-    counts[i] = as7341.toBasicCounts(readings[i]);
+  if (strcmp(measurementType, "Chlorophyll-a") == 0) {
+    Serial.print("Raw F8: ");
+    Serial.println(readings[9]);
+    sumChlF8 += readings[9];
+    countChlF8++;
+  } else if (strcmp(measurementType, "Turbidity") == 0) {
+    Serial.print("Raw NIR: ");
+    Serial.println(readings[11]);
+    sumTurbF8 += readings[9];
+    countTurbF8++;
   }
-
-  Serial.print(',');
-  Serial.println(millis() / 1000);
-  Serial.print("F1 415nm : ");
-  Serial.print(counts[0]);
-  Serial.print(" (");
-  Serial.print(readings[0]);
-  Serial.println(" raw)");
-
-  Serial.print("F2 445nm : ");
-  Serial.print(counts[1]);
-  Serial.print(" (");
-  Serial.print(readings[1]);
-  Serial.println(" raw)");
-
-  Serial.print("F3 480nm : ");
-  Serial.print(counts[2]);
-  Serial.print(" (");
-  Serial.print(readings[2]);
-  Serial.println(" raw)");
-
-  Serial.print("F4 515nm : ");
-  Serial.print(counts[3]);
-  Serial.print(" (");
-  Serial.print(readings[3]);
-  Serial.println(" raw)");
-
-  Serial.print("F5 555nm : ");
-  Serial.print(counts[6]);
-  Serial.print(" (");
-  Serial.print(readings[6]);
-  Serial.println(" raw)");
-
-  Serial.print("F6 590nm : ");
-  Serial.print(counts[7]);
-  Serial.print(" (");
-  Serial.print(readings[7]);
-  Serial.println(" raw)");
-
-  Serial.print("F7 630nm : ");
-  Serial.print(counts[8]);
-  Serial.print(" (");
-  Serial.print(readings[8]);
-  Serial.println(" raw)");
-
-  Serial.print("F8 680nm : ");
-  Serial.print(counts[9]);
-  Serial.print(" (");
-  Serial.print(readings[9]);
-  Serial.println(" raw)");
-
-  Serial.print("Clear    : ");
-  Serial.print(counts[10]);
-  Serial.print(" (");
-  Serial.print(readings[10]);
-  Serial.println(" raw)");
-
-  Serial.print("NIR      : ");
-  Serial.print(counts[11]);
-  Serial.print(" (");
-  Serial.print(readings[11]);
-  Serial.println(" raw)");
-
-  Serial.print("Measurement Type: ");
-  Serial.println(measurementType);  // Add measurement type
-
-  delay(1000);
 }
