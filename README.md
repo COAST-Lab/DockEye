@@ -1,8 +1,8 @@
-# Open Fluorometer
+# DockEye
 
 ## About
 
-This is the repository for an in-development, open-source, low-cost fluorometer for measuring water quality parameters. The current objective is measuring chlorophyll-*a* and turbidity,
+This is the repository for an in-development, open-source, low-cost multispectral sensor for measuring water quality parameters. The current objective is measuring chlorophyll-*a* and turbidity,
 though more parameters may be added in the future. This sensor uses a cuvette-based approach, similar to benchtop spectrofluorometers, rather than a truly in-situ one. The advantage of this approach is the ability to control ambient light while not strictly needing to be waterproof. Samples can be collected from the surface by hand or at depth using a Van Dorn sampler or CTD-Rosette.
 
 This sensor continues the research from the now-deprecated https://github.com/COAST-Lab/Low-Cost-Multiparameter-Water-Quality-Sensor built using the Particle Argon microcontroller. 
