@@ -11,7 +11,6 @@ The MOORE Foundation's SOCON (Sustained Ocean Color Observations from Nanosatell
 
 ## Introduction
 
-This sensor is built using an Adafruit ESP32-S3 Feather microcontroller, an Adafruit Adalogger/RTC, an AS7341 light sensor, an AW9523 LED driver, various LEDs, and a 3D printed enclosure. This repository currently contains firmware for flashing to the microcontroller and 3D printable design models for the enclosure, and scripts for data analysis, etc. This sensor is in active development, and this repository will be updated continuously as progress is made. 
 This instrument is built using an Adafruit ESP32-S3 Feather microcontroller, an Adafruit Adalogger/RTC, an AS7341 light sensor, an AW9523 LED driver, various LEDs, and a 3D printed enclosure. This repository currently contains firmware for flashing to the microcontroller and 3D printable design models for the enclosure, and scripts for data analysis, etc. This sensor is in active development, and this repository will be updated continuously as progress is made. 
 
 ## Parts
