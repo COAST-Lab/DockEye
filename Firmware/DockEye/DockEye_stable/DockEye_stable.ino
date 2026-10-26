@@ -122,10 +122,10 @@ if (countChlF8 > 0 && countBG_F8 > 0 && countTurbNIR > 0 && countBG_NIR > 0) {
   float avgBG_NIR = sumBG_NIR / countBG_NIR;
   float turbDiff = avgTurbNIR - avgBG_NIR;
 
-  // chlorophyll-a calibration equation (jan 2025)
+  // chlorophyll-a calibration equation (jan 2026)
   float calibrated_chla = 0.0871 * chlDiff - 1.3054;
-  // turbidity calibration equation (uncomment with new calibration)
-  //float calibrated_turb = 0.0139 * turbDiff - 8.6465;
+  // turbidity calibration equation (feb 2026)
+  float calibrated_turb = 0.0081 * turbDiff - 11.787;
 
   // Log one final summary row to SD
     File file = SD.open("DockEye Measurements.csv", FILE_WRITE);
@@ -165,11 +165,10 @@ if (countChlF8 > 0 && countBG_F8 > 0 && countTurbNIR > 0 && countBG_NIR > 0) {
     Serial.println(avgBG_NIR);
     Serial.print("Background Subtracted NIR Counts: "); 
     Serial.println(turbDiff);
-    //Serial.print("Calibrated Turbidity (NTU): "); 
-    //Serial.println(calibrated_turb);
+    Serial.print("Calibrated Turbidity (NTU): "); 
+    Serial.println(calibrated_turb);
     Serial.println("================================");
   }
-
 
   while (1) {
     delay(1);
@@ -350,5 +349,16 @@ void serialprintresults(RTC_PCF8523 &rtc, const char* measurementType) {
     countTurbNIR++;
     sumBG_F8 += readings[9];
     countBG_F8++;
+  } else if (strcmp(measurementType, "Background") == 0) {
+    Serial.print("Raw F8: ");
+    Serial.println(readings[9]);
+    sumChl_BG += readings[9];  
+    countChl_BG++;
+    Serial.print("Raw NIR: ");
+    Serial.println(readings[11]);
+    sumTurb_BG += readings[11]; 
+    countTurb_BG++;
   }
+}
+
 }
